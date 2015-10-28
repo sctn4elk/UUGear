@@ -336,6 +336,13 @@ float readSR04(UUGearDevice *dev, int trigPin, int echoPin)
 	return errorCode == 0 ? result : errorCode;
 }
 
+float readDS18b20(UUGearDevice *dev, int pin)
+{
+	sendMessage(dev->in, MSG_READ_DS18b20, dev->clientId, dev->fd, pin);
+	int errorCode = 0;
+	float result = waitForFloat(dev, &errorCode);
+	return errorCode == 0 ? result : -3;
+}
 
 void detachUUGearDevice (UUGearDevice *dev)
 {

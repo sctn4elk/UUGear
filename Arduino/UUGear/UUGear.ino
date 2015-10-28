@@ -29,6 +29,8 @@
  */
 #include <EEPROM.h>
 #include <Servo.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 #define BAUD_RATE  115200
 
@@ -53,6 +55,16 @@
 Servo allServos[SERVO_MAX_NUMBER];
 int servoPins[SERVO_MAX_NUMBER];
 
+// Data wire is plugged into pin 4 on the Arduino
+#define ONE_WIRE_BUS 4
+ 
+// Setup a oneWire instance to communicate with any OneWire devices 
+// (not just Maxim/Dallas temperature ICs)
+OneWire oneWire(ONE_WIRE_BUS);
+ 
+// Pass our oneWire reference to Dallas Temperature.
+DallasTemperature sensors(&oneWire);
+  
 String cmdBuf = "";
 int cmdEndStrLen = strlen(COMMAND_END_STRING);
 
@@ -97,6 +109,9 @@ void setup() {
   // initialize servo pins
   for (int i = 0; i < SERVO_MAX_NUMBER; i ++) {
     servoPins[i] = -1;
+
+  //start up the ds18b20 library
+   sensors.begin();
   }
 
 #if defined(__SCRIPT_ENGINE_ENABLED__) 
@@ -150,15 +165,15 @@ ISR(TIMER2_COMPA_vect) {
 #endif
 
 void loop() {
-#if defined(__SCRIPT_ENGINE_ENABLED__) 
-  // calculate the elapsed time since last circle
-  unsigned long currentMicros = micros();
-  elapsedMicros = currentMicros > lastMicros ? currentMicros - lastMicros : 4294967295 - lastMicros + currentMicros;
-  lastMicros = currentMicros;
-
-  // process mini scripts
-  processScripts();
-#endif
+  #if defined(__SCRIPT_ENGINE_ENABLED__) 
+    // calculate the elapsed time since last circle
+    unsigned long currentMicros = micros();
+    elapsedMicros = currentMicros > lastMicros ? currentMicros - lastMicros : 4294967295 - lastMicros + currentMicros;
+    lastMicros = currentMicros;
+  
+    // process mini scripts
+    processScripts();
+  #endif
 
   // listen to incoming commands
   int len = Serial.available();
@@ -353,10 +368,13 @@ void processCommand(String cmd) {
     case 0x51:
       cmdReadSR04(cmd);
       break;
+    case 0x52:
+      cmdReadDS18b20(cmd);
+      break;
     case 0xF0:
-#if defined(__SCRIPT_ENGINE_ENABLED__) 
-      cmdScript(cmd);
-#endif
+      #if defined(__SCRIPT_ENGINE_ENABLED__) 
+        cmdScript(cmd);
+      #endif
       break;
     case 0xFF:
       resetDevice();
@@ -650,6 +668,30 @@ void cmdReadSR04(String cmd) {
   }
 }
 
+//command to read DS18b20 temperature probe
+void cmdReadDS18b20(String cmd) {
+  if (cmd.length() > 5) {
+    byte pin = cmd.charAt(2);
+    byte clientId = cmd.charAt(3);
+    
+    // make sure no interrupts during the measuring
+    noInterrupts();
+
+    sensors.requestTemperatures();
+    float tempC = sensors.getTempCByIndex(0);
+
+    // allow interrupts now
+    interrupts();
+
+    //convert to Fahrenheit
+    float tempF = DallasTemperature::toFahrenheit(tempC);
+    
+    Serial.write(RESPONSE_START_CHAR);
+    Serial.write(clientId);
+    Serial.print(tempF);
+    Serial.print(RESPONSE_END_STRING);
+  }
+}
 #if defined(__SCRIPT_ENGINE_ENABLED__)
 // command to run mini script
 // example: 55 F0 89 BD 84 40 88 BD 84 40 89 BD 84 40 88 01 0D 0A

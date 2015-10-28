@@ -74,6 +74,7 @@
 
 #define MSG_READ_DHT11			41
 #define MSG_READ_SR04			42
+#define MSG_READ_DS18b20		43
 
 #define MSG_RESET_DEVICE		217
 
@@ -96,6 +97,7 @@
 
 #define CMD_READ_DHT11			0x50
 #define CMD_READ_SR04			0x51
+#define CMD_READ_DS18b20		0x52
 
 #define CMD_RESET_DEVICE		0xFF
 

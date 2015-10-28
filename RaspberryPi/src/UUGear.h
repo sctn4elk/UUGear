@@ -148,6 +148,22 @@ extern int readDHT(UUGearDevice *dev, int pin);
  */
 extern float readSR04(UUGearDevice *dev, int trigPin, int echoPin);
 
+/*
+ * Read temperature values from DS18b20 sensor
+ *
+ * parameters:
+ *	dev is the pointer of the device struct
+ *	pin is the digital pin that connects to the DATA wire of DS18b20 sensor
+ *
+ * returns:
+ *	float value of the temperature in degrees Fahrenheit
+ *  if any error hanppens, return a negative value:
+ *	  -1 for timeout
+ *	  -2 for checksum error
+ *	  -3 for communication error (please check /var/log/syslog)
+ */
+extern float readDS18b20(UUGearDevice *dev, int pin);
+
 extern void cleanupUUGear();
 
 

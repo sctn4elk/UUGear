@@ -27,6 +27,7 @@ $functionMap = [
 
 'readDHT'				=> [ 'request' => 41,	'return' => DATA_TYPE_INTEGER,	'paramCount' => 2, 'paramType1' => DATA_TYPE_STRING, 'paramType2' => DATA_TYPE_INTEGER ],
 'readSR04'				=> [ 'request' => 42,	'return' => DATA_TYPE_FLOAT,	'paramCount' => 3, 'paramType1' => DATA_TYPE_STRING, 'paramType2' => DATA_TYPE_INTEGER, 'paramType3' => DATA_TYPE_INTEGER ],
+'readDS18b20'			=> [ 'request' => 43,	'return' => DATA_TYPE_FLOAT,	'paramCount' => 2, 'paramType1' => DATA_TYPE_STRING, 'paramType2' => DATA_TYPE_INTEGER ],
 
 ];
 
